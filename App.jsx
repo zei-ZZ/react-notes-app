@@ -12,7 +12,11 @@ export default function App() {
 
   const currentNote =
     notes.find((note) => note.id === currentNoteId) || notes[0];
-
+  const sortedArray = notes.sort((a, b) => {
+    if (a.updatedAt > b.updatedAt) return -1;
+    if (a.updatedAt < b.updatedAt) return 1;
+    return 0;
+  });
   React.useEffect(() => {
     const unsubscribe = onSnapshot(notesCollection, function (snapshot) {
       // Sync up our local notes array with the snapshot data
@@ -58,7 +62,7 @@ export default function App() {
       {notes.length > 0 ? (
         <Split sizes={[30, 70]} direction="horizontal" className="split">
           <Sidebar
-            notes={notes}
+            notes={sortedArray}
             currentNote={currentNote}
             setCurrentNoteId={setCurrentNoteId}
             newNote={createNewNote}
