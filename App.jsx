@@ -7,8 +7,8 @@ import { addDoc, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { db, notesCollection } from "./firebase";
 export default function App() {
   const [notes, setNotes] = React.useState([]);
-
   const [currentNoteId, setCurrentNoteId] = React.useState("");
+  const [tempNoteText, setTempNoteText] = React.useState("");
 
   const currentNote =
     notes.find((note) => note.id === currentNoteId) || notes[0];
@@ -33,6 +33,29 @@ export default function App() {
       setCurrentNoteId(notes[0]?.id);
     }
   }, [notes]);
+
+  React.useEffect(() => {
+    if (currentNote) setTempNoteText(currentNote.body);
+  }, [currentNote]);
+
+  /**
+   * debouncing logic:
+   * create a useeffect that depends on the tempNoteText
+   *delay the sending of the request
+   * settimeout
+   * cleartimeout
+   */
+  /**
+   * this causes a bug when you change two notes quickly
+   */
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (tempNoteText !== currentNote.body) {
+        updateNote(tempNoteText);
+      }
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [tempNoteText]);
   async function createNewNote() {
     const newNote = {
       body: "# Type your markdown note's title here",
@@ -69,7 +92,10 @@ export default function App() {
             deleteNote={deleteNote}
           />
           {currentNoteId && notes.length > 0 && (
-            <Editor currentNote={currentNote} updateNote={updateNote} />
+            <Editor
+              tempNoteText={tempNoteText}
+              setTempNoteText={setTempNoteText}
+            />
           )}
         </Split>
       ) : (
